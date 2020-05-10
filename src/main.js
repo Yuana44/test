@@ -12,7 +12,13 @@ Vue.config.productionTip = false;
 
 Vue.component("TypeNav", TypeNav);
 Vue.component("Carousel", Carousel);
+
+// Vue.prototype.$bus = new Vue();
+
 new Vue({
+  beforeCreate() {
+    Vue.prototype.$bus = this;
+  },
   render: (h) => h(App),
   router,
   store, //所有的组件对象都可以通过$store属性得到store对象

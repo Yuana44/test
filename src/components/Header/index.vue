@@ -38,7 +38,8 @@
             class="input-error input-xxlarge"
             v-model="keyword"
           />
-          <button class="sui-btn btn-xlarge btn-danger" @click.prevent="search">
+          <button class="sui-btn btn-xlarge btn-danger"
+           @click.prevent="search">
             搜索
           </button>
         </form>
@@ -55,6 +56,11 @@ export default {
       keyword: "尚硅谷",
     };
   },
+  mounted() {
+    this.$bus.$on("removeKeyword", () => {
+      this.keyword = "";
+    });
+  },
   methods: {
     search() {
       const keyword = this.keyword;
@@ -67,7 +73,12 @@ export default {
       const { query } = this.$route;
       location.query = query;
 
-      this.$router.push(location);
+      // 判断
+      if (this.$route.path.indexOf("/search") === 0) {
+        this.$router.replace(location);
+      } else {
+        this.$router.push(location);
+      }
       // name: "search",
       // params: { keyword: keyword === "" ? undefined : keyword },
       // query: { keyword2: keyword.toUpperCase() },
