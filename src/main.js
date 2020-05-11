@@ -7,11 +7,13 @@ import store from "./store";
 import "./mock/mockServer";
 import "swiper/css/swiper.min.css";
 import Carousel from "@/components/Carousel";
+import Pagination from "@/components/Pagination";
 
 Vue.config.productionTip = false;
 
 Vue.component("TypeNav", TypeNav);
 Vue.component("Carousel", Carousel);
+Vue.component("Pagination", Pagination);
 
 // Vue.prototype.$bus = new Vue();
 
