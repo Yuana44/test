@@ -25,3 +25,9 @@ export const reqProductList = (searchParams) =>
     method: "POST",
     data: searchParams,
   });
+
+export const reqProduct = (skuId) => ajax(`/item/${skuId}`);
+// reqProduct(6);
+
+export const reqAddToCart = (skuId, skuNum) =>
+  ajax.post(`/cart/addToCart/${skuId}/${skuNum}`);
