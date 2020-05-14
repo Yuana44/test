@@ -75,7 +75,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="choose">
             <div class="chooseArea">
               <div class="choosed"></div>
@@ -407,7 +407,12 @@ export default {
       // 第三种
       try {
         await this.$store.dispatch("addToCart3", { skuId, skuNum });
-        alert("添加成功, 准备自动跳转到成功的界面");
+        window.sessionStorage.setItem(
+          "SKU_INFO_KEY",
+          JSON.stringify(this.skuInfo)
+        );
+        // alert("添加成功, 准备自动跳转到成功的界面");
+        this.$router.push({ path: "/addcartsuccess", query: { skuNum } });
       } catch (error) {
         alert(error.message);
       }
