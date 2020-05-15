@@ -8,6 +8,7 @@ import "./mock/mockServer";
 import "swiper/css/swiper.min.css";
 import Carousel from "@/components/Carousel";
 import Pagination from "@/components/Pagination";
+import './validate'
 
 Vue.config.productionTip = false;
 

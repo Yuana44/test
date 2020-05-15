@@ -13,8 +13,16 @@ const instance = axios.create({
 instance.interceptors.request.use((config) => {
   // console.log("请求拦截器执行");
   NProgress.start();
+  // 未登录
   config.headers["userTempId"] = store.state.user.userTempId;
   return config;
+
+  // 已登陆
+  const token = store.state.user.userInfo.token;
+  if (token) {
+    // 这一句必须写啊
+    config.headers["token"] = token;
+  }
 });
 
 // axios响应
