@@ -52,3 +52,28 @@ export const reqRegister = (userInfo) =>
 
 // 退出登录
 export const reqLogout = () => ajax("/user/passport/logout");
+
+// 获取我的订单列表
+export const reqMyOrders = (page, limit) =>
+  ajax(`/order/auth/${page}/${limit}`);
+reqMyOrders(1, 3);
+
+// 获取订单交易悉尼下
+export const reqTradeInfo = () => ajax("/order/auth/trade");
+
+// 提交订单
+export const reqSubmitOrder = (tradeNo, orderInfo) =>
+  ajax({
+    url: "/order/auth/submitOrder",
+    method: "POST",
+    params: { tradeNo },
+    data: orderInfo,
+  });
+
+// 获取订单支付信息
+export const reqPayInfo = (orderId) =>
+  ajax(`/payment/weixin/createNative/${orderId}`);
+
+//查询订单支付状态
+export const reqOrderStatus = (orderId) =>
+  ajax(`/payment/weixin/queryPayStatus/${orderId}`);

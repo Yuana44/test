@@ -73,7 +73,7 @@
         <span>全选</span>
       </div>
       <div class="option">
-        <a href="#none">删除选中的商品</a>
+        <a href="javascript:" @click="deleteCheckedCartItems">删除选中的商品</a>
         <a href="#none">移到我的关注</a>
         <a href="#none">清除下柜商品</a>
       </div>
@@ -87,9 +87,7 @@
           <i class="summoney">{{ totalPrice }}</i>
         </div>
         <div class="sumbtn">
-          <router-link class="sum-btn" target="_blank" to="/trade"
-            >结算</router-link
-          >
+          <a class="sum-btn" @click="$router.push('/trade')">结算</a>
         </div>
       </div>
     </div>
@@ -98,24 +96,25 @@
 
 <script>
 import { mapState, mapGetters } from "vuex";
+
 export default {
   name: "ShopCart",
+
   computed: {
     ...mapState({
       cartList: (state) => state.shopCart.cartList,
     }),
     ...mapGetters(["totalCount", "totalPrice"]),
-    // 不用mapState的写法
     cartList2() {
       return this.$store.state.shopCart.cartList;
     },
-
-    // 是否全选
     isAllChecked: {
       get() {
-        return this.cartList.every((item) => item.isChecked === 1);
+        return (
+          this.cartList.every((item) => item.isChecked === 1) &&
+          this.cartList.length > 0
+        );
       },
-      set(value) {},
       async set(value) {
         try {
           const result = await this.$store.dispatch("checkAllCartItems", value);
@@ -130,21 +129,10 @@ export default {
   mounted() {
     this.$store.dispatch("getCartList");
   },
-  methods: {
-    // 改变指定购物项的勾选状态
-    async checkCartItem(item) {
-      const skuId = item.skuId;
-      const isChecked = item.isChecked === 1 ? 0 : 1;
-      try {
-        await this.$store.dispatch("checkCartItem", { skuId, isChecked });
-        this.$store.dispatch("getCartList");
-      } catch (error) {
-        alert(error.message);
-      }
-    },
 
-    // 改变购物车重的商品数量
+  methods: {
     async changeItemNum(item, numChange, event) {
+      // 如果修改数量后的数量大于0才需要请求更新
       if (item.skuNum + numChange > 0) {
         try {
           await this.$store.dispatch("addToCart3", {
@@ -158,6 +146,38 @@ export default {
       } else {
         if (event) {
           event.target.value = item.skuNum;
+        }
+      }
+    },
+
+    async checkCartItem(item) {
+      const skuId = item.skuId;
+      const isChecked = item.isChecked === 1 ? 0 : 1;
+      try {
+        await this.$store.dispatch("checkCartItem", { skuId, isChecked });
+        this.$store.dispatch("getCartList");
+      } catch (error) {
+        alert(error.message);
+      }
+    },
+    async deleteCartItem(item) {
+      if (window.confirm(`确定删除${item.skuName}吗?`)) {
+        try {
+          await this.$store.dispatch("deleteCartItem", item.skuId);
+          this.$store.dispatch("getCartList");
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+    },
+
+    async deleteCheckedCartItems() {
+      if (window.confirm(`确定删除吗?`)) {
+        try {
+          await this.$store.dispatch("deleteCheckedCartItems");
+          this.$store.dispatch("getCartList");
+        } catch (error) {
+          alert(error.message);
         }
       }
     },

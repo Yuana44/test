@@ -8,10 +8,15 @@ import "./mock/mockServer";
 import "swiper/css/swiper.min.css";
 import Carousel from "@/components/Carousel";
 import Pagination from "@/components/Pagination";
-import './validate'
+import "./validate";
+import * as API from "@/api";
+import "./elements";
 
+// 让所有组件对象可以直接看到API对象
+Vue.prototype.$API = API;
+
+// 去掉不是生产环境的提示
 Vue.config.productionTip = false;
-
 Vue.component("TypeNav", TypeNav);
 Vue.component("Carousel", Carousel);
 Vue.component("Pagination", Pagination);

@@ -15,14 +15,14 @@ instance.interceptors.request.use((config) => {
   NProgress.start();
   // 未登录
   config.headers["userTempId"] = store.state.user.userTempId;
-  return config;
 
   // 已登陆
   const token = store.state.user.userInfo.token;
   if (token) {
-    // 这一句必须写啊
+    // 这一句必须
     config.headers["token"] = token;
   }
+  return config;
 });
 
 // axios响应
