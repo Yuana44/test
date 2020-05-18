@@ -11,7 +11,12 @@ import Pagination from "@/components/Pagination";
 import "./validate";
 import * as API from "@/api";
 import "./elements";
+import VueLazyload from "vue-lazyload";
+import loading from "@/assets/images/loading.gif";
 
+Vue.use(VueLazyload, {
+  loading,
+});
 // 让所有组件对象可以直接看到API对象
 Vue.prototype.$API = API;
 
