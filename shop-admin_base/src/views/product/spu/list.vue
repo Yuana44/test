@@ -1,7 +1,8 @@
 <template>
   <div>
-    <el-card style="margin-bottom: 20px">
+    <el-card style="margin-bottom: 20px;" v-show="!isShowSkuForm">
       <category-selector
+        ref="cs"
         @categoryChange="handleCategoryChange"
       ></category-selector>
     </el-card>
@@ -10,12 +11,12 @@
         <el-button
           type="primary"
           icon="el-icon-plus"
-          style="margin-bottom: 20px"
+          style="margin-bottom: 20px;"
           @click="showAddSpu"
+          :disabled="!category3Id"
           >添加SPU</el-button
         >
         <el-table v-loading="loading" :data="spuList" border stripe>
-          <!-- 序号列 -->
           <el-table-column label="序号" type="index" width="80" align="center">
           </el-table-column>
           <el-table-column label="SPU名称" prop="spuName"> </el-table-column>
@@ -28,7 +29,7 @@
                 type="primary"
                 icon="el-icon-plus"
                 size="mini"
-                @click="showSkuAdd"
+                @click="showSkuAdd(row)"
               ></hint-button>
               <hint-button
                 title="修改SPU"
@@ -42,13 +43,17 @@
                 type="info"
                 icon="el-icon-info"
                 size="mini"
+                @click="showSkuList(row)"
               ></hint-button>
-              <hint-button
-                title="删除SPU"
-                type="danger"
-                icon="el-icon-delete"
-                size="mini"
-              ></hint-button>
+              <el-popconfirm title="确定删除吗?" @onConfirm="deleteSpu(row.id)">
+                <hint-button
+                  slot="reference"
+                  title="删除SPU"
+                  type="danger"
+                  icon="el-icon-delete"
+                  size="mini"
+                ></hint-button>
+              </el-popconfirm>
             </template>
           </el-table-column>
         </el-table>
@@ -64,15 +69,37 @@
           @size-change="handleSizeChange"
         />
       </div>
-      <!-- @update:visible="isShowSpuForm=$event" -->
-      <!--
-        一旦使用.sync, 必须是一个动态的变量属性值, 且属性名必须使用:
-        但如果不加:, 传递给子组件的总是false值
-       -->
-      <SpuForm ref="spuForm" :visible.sync="isShowSpuForm"></SpuForm>
+      <SpuForm
+        ref="spuForm"
+        :visible.sync="isShowSpuForm"
+        @saveSuccess="handleSaveSuccess"
+        @cancel="handleCancel"
+      ></SpuForm>
 
-      <SkuForm v-show="isShowSkuForm" @cancel="isShowSkuForm = false"></SkuForm>
+      <SkuForm
+        ref="skuForm"
+        v-show="isShowSkuForm"
+        @cancel="isShowSkuForm = false"
+        :saveSuccess="() => (isShowSkuForm = false)"
+      ></SkuForm>
     </el-card>
+
+    <el-dialog title="收货地址" :visible.sync="isShowSkuList">
+      <el-table :data="skuList" border>
+        <el-table-column property="skuName" label="名称"></el-table-column>
+        <el-table-column property="price" label="价格(元)"></el-table-column>
+        <el-table-column property="weight" label="重量(KG)"></el-table-column>
+        <el-table-column label="默认图片">
+          <template slot-scope="{ row }">
+            <img
+              :src="row.skuDefaultImg"
+              alt=""
+              style="width: 100px; height: 100px;"
+            />
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
@@ -94,19 +121,20 @@ export default {
       limit: 3,
       total: 0,
 
-      isShowSpuForm: false, // 是否显示spuForm界面
-      isShowSkuForm: false // 是否显示skuForm界面
+      isShowSpuForm: false,
+      isShowSkuForm: false,
+
+      isShowSkuList: false,
+      spu: {},
+      skuList: []
     };
   },
 
-  /*
-  子组件更新父组件的数据
-    函数属性
-    vue自定义事件
-    v-model
-    .sync
-    $parent
-  */
+  watch: {
+    isShowSpuForm(value) {
+      this.$refs.cs.disabled = value;
+    }
+  },
 
   mounted() {
     this.category3Id = 61;
@@ -114,37 +142,54 @@ export default {
   },
 
   methods: {
-    /*
-    显示SKU添加的表单界面
-    */
+    // 删除指定id
+    async deleteSpu(spuId) {
+      const result = await this.$API.spu.remove(spuId);
+      if (result.code === 200) {
+        this.$message.success("删除成功");
+        this.getSpuList();
+      } else {
+        this.$message.error(result.data || result.message || "删除失败");
+      }
+    },
+
+    // 显示指定spu下所有sku的列表
+    async showSkuList(spu) {
+      this.isShowSkuList = true;
+      this.spu = spu;
+      const result = await this.$API.sku.getListBySpuId(spu.id);
+      this.skuList = result.data;
+    },
+
+    // Spu保存成功的事件监听
+    handleSaveSuccess() {
+      this.getSpuList(this.spuId ? this.page : 1);
+      this.spuId = null;
+    },
+
+    handleCancel() {
+      // 重置更新的标识
+      this.spuId = null;
+    },
+
+    // 显示SKU添加的表单界面
     showSkuAdd() {
       this.isShowSkuForm = true;
     },
 
-    /*
-    显示SPU的添加界面
-    */
+    // 显示SPU的添加界面
     showAddSpu() {
-      // 显示SpuForm修改界面
       this.isShowSpuForm = true;
-      // 通知SpuForm请求添加界面初始数据显示
       this.$refs.spuForm.initLoadAddData();
     },
 
-    /*
-    显示SPU的修改界面
-    */
+    // 显示SPU的修改界面
     showUpdateSpu(id) {
-      // 显示SpuForm修改界面
       this.isShowSpuForm = true;
-
-      // 通知SpuForm根据传入的ID请求获取初始显示需要的数据
-      // 使用的是v-show来隐藏的, 隐藏时组件对象还在存在
       this.$refs.spuForm.initLoadUpdateData(id);
     },
-    /*
-    选择新的分类的监听回调
-    */
+
+    // 选择新的分类的监听回调
     handleCategoryChange({ categoryId, level }) {
       if (level === 1) {
         this.category1Id = categoryId;
@@ -157,14 +202,11 @@ export default {
         (this.spuList = []), (this.total = 0);
       } else {
         this.category3Id = categoryId;
-        // 请求获取分页列表数据
         this.getSpuList();
       }
     },
 
-    /*
-    获取指定页码的列表数据 (spuList, total)
-    */
+    // 获取指定页码的列表数据 (spuList, total)
     async getSpuList(page = 1) {
       this.page = page;
       const { limit, category3Id } = this;
@@ -176,9 +218,7 @@ export default {
       }
     },
 
-    /*
-    当每页数量发生改变的监听回调
-    */
+    // 当每页数量发生改变的监听回调
     handleSizeChange(pageSize) {
       this.limit = pageSize;
       this.getSpuList(1);

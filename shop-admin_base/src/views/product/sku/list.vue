@@ -114,9 +114,16 @@ export default {
   },
 
   methods: {
-    // 显示Sku详情信息
-    showSkuInfo(skuId) {
-      this.$message.info("课上实现");
+    handleClose(close) {
+      this.skuInfo = {};
+      this.isShowSkuInfo = false;
+    },
+
+    // 显示SKU详情
+    async showSkuInfo(id) {
+      this.isShowSkuInfo = true;
+      const result = await this.$API.sku.get(id);
+      this.skuInfo = result.data;
     },
 
     // 当页码发生改变自动调用
@@ -133,28 +140,6 @@ export default {
       this.loading = false;
       this.skuList = result.data.records;
       this.total = result.data.total;
-    },
-
-    // 对指定SKU进行上架的请求
-    onSale(skuId) {
-      this.$API.sku.onSale(skuId).then(result => {
-        this.$message({
-          type: "success",
-          message: "上架成功!"
-        });
-        this.getSkuList(this.page);
-      });
-    },
-
-    // 对指定SKU进行下架的请求
-    cancelSale(skuId) {
-      this.$API.sku.cancelSale(skuId).then(result => {
-        this.$message({
-          type: "success",
-          message: "下架成功!"
-        });
-        this.getSkuList(this.page);
-      });
     },
 
     // 到SKU的更新界面去
@@ -177,6 +162,28 @@ export default {
           type: "error"
         });
       }
+    },
+
+    // 对指定SKU进行上架的请求
+    onSale(skuId) {
+      this.$API.sku.onSale(skuId).then(result => {
+        this.$message({
+          type: "success",
+          message: "上架成功!"
+        });
+        this.getSkuList(this.page);
+      });
+    },
+
+    // 对指定SKU进行下架的请求
+    cancelSale(skuId) {
+      this.$API.sku.cancelSale(skuId).then(result => {
+        this.$message({
+          type: "success",
+          message: "下架成功!"
+        });
+        this.getSkuList(this.page);
+      });
     }
   }
 };
